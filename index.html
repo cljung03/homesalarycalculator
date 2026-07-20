@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home &amp; Life Affordability Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#EEEAE2; --card:#fff; --hdr:#0F2D24; --gold:#C9A130;
+  --green:#2A6049; --gl:#E8EFE8; --tx:#1C1C1E; --mu:#6B7280; --bd:#DDD8CF;
+  --serif:'Fraunces',Georgia,serif; --sans:'DM Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5}
+/* Header */
+header{background:var(--hdr);padding:32px 20px 24px;text-align:center}
+.hdr-inner{max-width:580px;margin:0 auto}
+.hdr-title{font-family:var(--serif);font-size:clamp(20px,4vw,28px);color:#fff;letter-spacing:-.5px;margin-bottom:8px}
+.hdr-sub{font-size:13px;color:#A8C5B5;margin-bottom:18px}
+#city-select{background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2);
+  border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;
+  outline:none;min-width:240px;font-family:var(--sans)}
+#city-select option{background:#0F2D24;color:#fff}
+#tax-note{font-size:11px;color:#7BA896;margin-top:6px}
+.refresh-btn{display:inline-block;margin-top:14px;background:rgba(201,161,48,.2);
+  border:1px solid rgba(201,161,48,.4);color:#E8C36A;border-radius:8px;padding:8px 18px;
+  font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+/* Layout */
+main{display:grid;grid-template-columns:1fr 360px;gap:24px;max-width:1100px;margin:0 auto;padding:24px 16px;align-items:start}
+.results-col{position:sticky;top:20px;height:fit-content}
+@media(max-width:800px){main{grid-template-columns:1fr}.results-col{position:static}}
+/* Cards */
+.card{background:var(--card);border-radius:16px;padding:22px 26px;margin-bottom:18px;border:1px solid var(--bd);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.card-icon{font-size:19px}
+.card-title{font-size:15px;font-weight:700;color:var(--green);letter-spacing:-.2px}
+/* Input rows */
+.input-row{margin-bottom:16px}
+.row-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.row-label{font-size:13px;font-weight:500;color:var(--tx)}
+.row-val{font-size:13px;font-weight:700;color:var(--green);white-space:nowrap;margin-left:8px}
+.row-sub{font-size:11px;color:var(--mu);margin-bottom:5px}
+/* Range sliders */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;
+  background:var(--bd);border-radius:2px;outline:none;cursor:pointer;display:block;margin-top:4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:var(--green);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
+  background:var(--green);cursor:pointer;border:none}
+/* Number input */
+.num-wrap{display:flex;border:1.5px solid var(--bd);border-radius:8px;overflow:hidden}
+.num-pre{padding:8px 10px;background:var(--gl);color:var(--green);font-weight:600;font-size:13px;border-right:1px solid var(--bd)}
+.num-input{flex:1;border:none;outline:none;padding:8px 12px;font-size:13px;background:transparent;color:var(--tx);font-family:var(--sans);width:0}
+/* Button groups */
+.btn-group,.btn-pair{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.btn{padding:6px 16px;border-radius:8px;cursor:pointer;border:1.5px solid var(--bd);background:transparent;color:var(--tx);font-weight:600;font-size:13px;font-family:var(--sans)}
+.btn.active{background:var(--green);border-color:var(--green);color:#fff}
+.btn-pair .btn{flex:1;padding:10px;border-radius:10px}
+/* Toggle */
+.toggle-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.toggle-info .row-sub{margin-top:2px}
+.toggle-switch{width:44px;height:24px;border-radius:12px;background:var(--bd);
+  position:relative;cursor:pointer;border:none;flex-shrink:0;margin-left:16px;transition:background .2s}
+.toggle-switch.on{background:var(--green)}
+.toggle-switch::after{content:'';position:absolute;width:18px;height:18px;background:#fff;
+  border-radius:50%;top:3px;left:3px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.toggle-switch.on::after{left:23px}
+/* Auto block */
+.auto-block{background:var(--gl);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.auto-header{font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.auto-line{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid rgba(42,96,73,.1)}
+.auto-line:last-child{border-bottom:none}
+.auto-amt{font-weight:700;color:var(--green)}
+/* Results */
+.result-hero{background:var(--hdr);border-radius:18px;padding:26px 22px 18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(15,45,36,.25)}
+.result-eyebrow{font-size:10px;font-weight:700;color:#7BA896;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.result-salary{font-family:var(--serif);font-size:clamp(36px,5vw,48px);color:var(--gold);line-height:1.05;letter-spacing:-1px}
+.result-city{font-size:12px;color:#A8C5B5;margin-top:3px}
+.result-comfort{margin-top:14px;padding:13px 15px;background:rgba(201,161,48,.18);border-radius:11px;border-left:3px solid var(--gold)}
+.comfort-label{font-size:10px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.comfort-salary{font-family:var(--serif);font-size:26px;color:#fff;margin-top:2px}
+.result-taxes{margin-top:14px;border-top:1px solid rgba(255,255,255,.1);padding-top:13px}
+.taxes-hdr{font-size:10px;font-weight:700;color:#7BA896;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.tax-line{display:flex;justify-content:space-between;font-size:12px;color:#A8C5B5;margin-bottom:5px}
+.tax-line span:last-child{font-weight:700;color:#fff}
+.eff-rate{font-size:11px;color:#7BA896;margin-top:6px}
+.eff-note{font-size:10px;color:#4A7A6A;margin-top:2px}
+.last-updated{font-size:10px;color:#7BA896;margin-top:6px}
+.result-card{background:var(--card);border-radius:18px;padding:18px 22px;margin-bottom:14px;border:1px solid var(--bd)}
+.rc-label{font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.li{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12.5px}
+.li small{font-size:10px;color:var(--mu)}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;margin-top:4px}
+.total-label{font-weight:700;color:var(--green);font-size:14px}
+.total-val{font-family:var(--serif);font-size:20px;color:var(--green)}
+.total-val small{font-size:11px;color:var(--mu);font-family:var(--sans)}
+.chart-wrap{width:100%;max-width:170px;margin:0 auto 10px}
+.legend-item{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px}
+.legend-item .dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.legend-item span:nth-child(2){flex:1;color:var(--tx)}
+.legend-item span:last-child{color:var(--mu);font-weight:600}
+/* Refresh overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.overlay-box{background:#fff;border-radius:20px;padding:32px;max-width:420px;width:100%}
+.overlay-title{font-family:var(--serif);font-size:22px;color:var(--green);margin-bottom:8px}
+.overlay-sub{font-size:13px;color:var(--mu);margin-bottom:20px;line-height:1.6}
+.overlay-input{width:100%;border:1.5px solid var(--bd);border-radius:8px;padding:10px 14px;font-size:13px;font-family:var(--sans);outline:none;margin-bottom:14px}
+.overlay-input:focus{border-color:var(--green)}
+.overlay-warn{background:#FFF8E6;border:1px solid rgba(201,161,48,.3);border-radius:8px;padding:10px 14px;font-size:11.5px;color:#7A6020;margin-bottom:16px;line-height:1.5}
+.overlay-btns{display:flex;gap:10px}
+.btn-primary{flex:1;padding:11px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)}
+.btn-cancel{padding:11px 20px;background:transparent;color:var(--mu);border:1.5px solid var(--bd);border-radius:10px;font-size:14px;cursor:pointer;font-family:var(--sans)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+/* Tip box */
+.tip-box{background:#FFF8E6;border:1px solid rgba(201,161,48,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:#7A6020;line-height:1.5;margin-top:6px}
+/* Footer */
+footer{text-align:center;padding:16px 24px 32px;color:var(--mu);font-size:11px;border-top:1px solid var(--bd);line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+  <div class="hdr-inner">
+    <h1 class="hdr-title">How much do you need to earn?</h1>
+    <p class="hdr-sub">Enter your life goals. We'll calculate the salary needed to cover everything.</p>
+    <div>
+      <select id="city-select">
+        <option value="Bellevue, WA">Bellevue, WA</option>
+        <option value="Seattle, WA" selected>Seattle, WA</option>
+        <option value="Irvine, CA">Irvine, CA</option>
+        <option value="Los Angeles, CA">Los Angeles, CA</option>
+        <option value="San Francisco, CA">San Francisco, CA</option>
+        <option value="Austin, TX">Austin, TX</option>
+        <option value="Denver, CO">Denver, CO</option>
+        <option value="New York, NY">New York, NY</option>
+      </select>
+    </div>
+    <div id="tax-note">No WA state income tax</div>
+    <button class="refresh-btn" id="refresh-btn">&#8635; Refresh Live Data via Claude AI</button>
+  </div>
+</header>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main>
+<div class="input-col">
+
+  <!-- CARD 1: YOUR HOME -->
+  <div class="card">
+    <div class="card-head"><span class="card-icon">&#127968;</span><h2 class="card-title">Your Home</h2></div>
+
+    <div class="input-row">
+      <label class="row-label" id="hp-label">Target Home Price &middot; Seattle, WA median: $875,000</label>
+      <div class="row-sub">Adjust to your actual target price</div>
+      <div class="num-wrap">
+        <span class="num-pre">$</span>
+        <input type="number" id="homePrice" value="875000" min="0" class="num-input">
+      </div>
+    </div>
+
+    <div class="input-row">
+      <div class="row-head">
+        <span class="row-label">Down Payment</span>
+        <span class="row-val" id="val-downPct">20% &mdash; $175,000</span>
+      </div>
+      <div class="row-sub" id="sub-downPct">Loan principal: $700,000</div>
+      <input type="range" id="downPct" min="3" max="40" step="1" value="20">
+    </div>
+
+    <div class="input-row">
+      <div class="row-label" style="margin-bottom:8px">Loan Term</div>
+      <div class="btn-pair" data-group="loanTerm">
+        <button class="btn" data-val="15">15-Year Fixed</button>
+        <button class="btn active" data-val="30">30-Year Fixed</button>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <div class="row-head">
+        <span class="row-label">Interest Rate</span>
+        <span class="row-val" id="val-rate">6.6%</span>
+      </div>
+      <div class="row-sub">Freddie Mac 30-yr avg: 6.55% (July 2026)</div>
+      <input type="range" id="rate" min="3" max="10" step="0.1" value="6.6">
+    </div>
+  </div>
+
+  <!-- CARD 2: HOUSING COSTS -->
+  <div class="card">
+    <div class="card-head"><span class="card-icon">&#127960;</span><h2 class="card-title">Housing Costs</h2></div>
+    <div class="auto-block">
+      <div class="auto-header">Auto-Estimated &mdash; Updates as You Adjust</div>
+      <div class="auto-line"><span>Mortgage</span><span class="auto-amt" id="auto-mortgage">$3,716/mo</span></div>
+      <div class="auto-line"><span id="auto-propTax-label">Property Tax (0.92%/yr)</span><span class="auto-amt" id="auto-propTax">$671/mo</span></div>
+      <div class="auto-line"><span>Homeowner's Insurance (~0.5%/yr)</span><span class="auto-amt" id="auto-ins">$365/mo</span></div>
+      <div class="auto-line"><span>Maintenance &amp; Repairs (~1%/yr)</span><span class="auto-amt" id="auto-maint">$729/mo</span></div>
+      <div class="auto-line"><span id="auto-util-label">Utilities (Seattle, WA avg)</span><span class="auto-amt" id="auto-util">$270/mo</span></div>
+    </div>
+
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="row-label">HOA Fees</div>
+        <div class="row-sub">Common in condos, townhomes, and gated communities</div>
+      </div>
+      <button class="toggle-switch on" id="hoa-toggle"></button>
+    </div>
+    <div id="hoa-section">
+      <div class="input-row">
+        <div class="row-head">
+          <span class="row-label">HOA Monthly Amount</span>
+          <span class="row-val" id="val-hoaAmt">$420/mo</span>
+        </div>
+        <div class="row-sub" id="sub-hoaAmt">Seattle, WA avg: $420/mo</div>
+        <input type="range" id="hoaAmt" min="0" max="3000" step="50" value="420">
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 3: YOUR FAMILY -->
+  <div class="card">
+    <div class="card-head"><span class="card-icon">&#128106;</span><h2 class="card-title">Your Family</h2></div>
+
+    <div class="input-row">
+      <div class="row-label" style="margin-bottom:8px">Adults in Household</div>
+      <div class="btn-group" data-group="adults">
+        <button class="btn" data-val="1">1</button>
+        <button class="btn active" data-val="2">2</button>
+        <button class="btn" data-val="3">3</button>
+        <button class="btn" data-val="4">4</button>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <div class="row-label" style="margin-bottom:8px">Children</div>
+      <div class="btn-group" data-group="kids">
+        <button class="btn active" data-val="0">0</button>
+        <button class="btn" data-val="1">1</button>
+        <button class="btn" data-val="2">2</button>
+        <button class="btn" data-val="3">3</button>
+        <button class="btn" data-val="4">4</button>
+        <button class="btn" data-val="5">5</button>
+      </div>
+    </div>
+
+    <div id="childcare-row" style="display:none">
+      <div class="input-row">
+        <div class="row-head">
+          <span class="row-label">Childcare / Education &mdash; per child</span>
+          <span class="row-val" id="val-childcare">$1,980/child</span>
+        </div>
+        <div class="row-sub" id="sub-childcare">Seattle, WA avg: $1,980/child</div>
+        <input type="range" id="childcare" min="0" max="5000" step="100" value="1980">
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 4: MONTHLY EXPENSES -->
+  <div class="card">
+    <div class="card-head"><span class="card-icon">&#128722;</span><h2 class="card-title">Monthly Living Expenses</h2></div>
+
+    <div class="input-row">
+      <div class="row-head">
+        <span class="row-label">Groceries &amp; Household Supplies</span>
+        <span class="row-val" id="val-groceries">$880/mo</span>
+      </div>
+      <div class="row-sub" id="sub-groceries">Auto-set for 2 adults. Drag to adjust.</div>
+      <input type="range" id="groceries" min="200" max="5000" step="50" value="880">
+    </div>
+
+    <div class="input-row">
+      <div class="row-head">
+        <span class="row-label">Healthcare Premium &mdash; per adult</span>
+        <span class="row-val" id="val-hlthPerAdult">$500/adult</span>
+      </div>
+      <div class="row-sub" id="sub-hlthPerAdult">Total: $1,000/mo for 2 adults</div>
+      <input type="range" id="hlthPerAdult" min="0" max="2500" step="50" value="500">
+    </div>
+
+    <div class="input-row">
+      <div class="row-label" style="margin-bottom:8px">Number of Cars</div>
+      <div class="btn-group" data-group="cars">
+        <button class="btn" data-val="0">0</button>
+        <button class="btn" data-val="1">1</button>
+        <button class="btn active" data-val="2">2</button>
+        <button class="btn" data-val="3">3</button>
+      </div>
+    </div>
+
+    <div id="car-details">
+      <div class="input-row">
+        <div class="row-head">
+          <span class="row-label">Car Payment(s) &mdash; total per month</span>
+          <span class="row-val" id="val-carPay">$500/mo</span>
+        </div>
+        <input type="range" id="carPay" min="0" max="2500" step="50" value="500">
+      </div>
+      <div class="input-row">
+        <div class="row-head">
+          <span class="row-label">Gas &mdash; per car per month</span>
+          <span class="row-val" id="val-gasPerCar">$180/car</span>
+        </div>
+        <div class="row-sub" id="sub-gasPerCar">Total gas: $360/mo</div>
+        <input type="range" id="gasPerCar" min="50" max="500" step="10" value="180">
+      </div>
+      <div class="input-row">
+        <div class="row-head">
+          <span class="row-label">Auto Insurance &mdash; per car per month</span>
+          <span class="row-val" id="val-insPerCar">$185/car</span>
+        </div>
+        <div class="row-sub" id="sub-insPerCar">Seattle, WA avg: $185/car &middot; Total: $370/mo</div>
+        <input type="range" id="insPerCar" min="50" max="500" step="10" value="185">
+      </div>
+    </div>
+
+    <div class="input-row">
+      <div class="row-head">
+        <span class="row-label">Dining Out &amp; Takeout</span>
+        <span class="row-val" id="val-dining">$600/mo</span>
+      </div>
+      <input type="range" id="dining" min="0" max="3000" step="50" value="600">
+    </div>
+
+    <div class="input-row">
+      <div class="row-head">
+        <span class="row-label">Entertainment &amp; Subscriptions</span>
+        <span class="row-val" id="val-entertain">$250/mo</span>
+      </div>
+      <input type="range" id="entertain" min="0" max="2000" step="50" value="250">
+    </div>
+  </div>
+
+  <!-- CARD 5: TRAVEL & SAVINGS -->
+  <div class="card">
+    <div class="card-head"><span class="card-icon">&#9992;</span><h2 class="card-title">Travel &amp; Savings</h2></div>
+
+    <div class="input-row">
+      <div class="row-head">
+        <span class="row-label">Trips Per Year</span>
+        <span class="row-val" id="val-trips">2 trips / year</span>
+      </div>
+      <input type="range" id="trips" min="0" max="12" step="1" value="2">
+    </div>
+
+    <div class="input-row">
+      <div class="row-head">
+        <span class="row-label">Average Cost Per Trip</span>
+        <span class="row-val" id="val-tripCost">$3,000/trip</span>
+      </div>
+      <div class="row-sub" id="sub-tripCost">Annual travel budget: $6,000 &rarr; $500/mo</div>
+      <input type="range" id="tripCost" min="500" max="15000" step="250" value="3000">
+    </div>
+
+    <div class="input-row">
+      <div class="row-head">
+        <span class="row-label">Savings Goal &mdash; % of take-home</span>
+        <span class="row-val" id="val-savePct">15%</span>
+      </div>
+      <div class="row-sub">Goes toward retirement, investments &amp; emergency fund</div>
+      <input type="range" id="savePct" min="5" max="40" step="1" value="15">
+    </div>
+
+    <div class="tip-box">&#128161; Financial advisors generally recommend saving 15&ndash;20% of take-home pay. Adjust to match your goals.</div>
+  </div>
+
+</div><!-- end input-col -->
+
+<!-- RESULTS COLUMN -->
+<div class="results-col">
+  <div id="results-panel">
+    <div style="padding:20px;text-align:center;color:var(--mu);font-size:13px">Loading results...</div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <p>Data updated <strong>July 2026</strong>. Sources: Redfin, Zillow, Freddie Mac, ValuePenguin, EIA, DaycareCalc.com, BLS.
+  Uses 2024 federal tax brackets + $14,600 standard deduction (single filer).
+  Figures are city averages and will vary by neighborhood, home type, and lifestyle.
+  <strong>Not financial advice.</strong></p>
+</footer>
+
+<!-- ═══════════════ JAVASCRIPT ═══════════════ -->
+<script>
+
+// ── City Data (Updated July 2026) ──────────────────────────
+var CITIES = {
+  'Bellevue, WA':      {median:1500000, propTax:0.0088, stateTax:0,     hoa:650,  util:280, groc:480, childcare:2520, carIns:185, taxNote:'No WA state income tax'},
+  'Seattle, WA':       {median:875000,  propTax:0.0092, stateTax:0,     hoa:420,  util:270, groc:440, childcare:1980, carIns:185, taxNote:'No WA state income tax'},
+  'Irvine, CA':        {median:1500000, propTax:0.0120, stateTax:0.093, hoa:550,  util:320, groc:450, childcare:2480, carIns:221, taxNote:'~9.3% CA state income tax'},
+  'Los Angeles, CA':   {median:895000,  propTax:0.0125, stateTax:0.093, hoa:480,  util:310, groc:420, childcare:1890, carIns:221, taxNote:'~9.3% CA state income tax'},
+  'San Francisco, CA': {median:1400000, propTax:0.0118, stateTax:0.093, hoa:750,  util:340, groc:510, childcare:2800, carIns:221, taxNote:'~9.3% CA state income tax'},
+  'Austin, TX':        {median:545000,  propTax:0.0185, stateTax:0,     hoa:320,  util:380, groc:380, childcare:1180, carIns:215, taxNote:'No TX state income tax'},
+  'Denver, CO':        {median:530000,  propTax:0.0060, stateTax:0.044, hoa:370,  util:320, groc:400, childcare:1440, carIns:240, taxNote:'4.4% flat CO state income tax'},
+  'New York, NY':      {median:800000,  propTax:0.0088, stateTax:0.108, hoa:1300, util:325, groc:530, childcare:2200, carIns:308, taxNote:'~10.8% combined NY state + city tax'}
+};
+var PIE_COLORS = ['#2A6049','#4A9E79','#C9A130','#7BB3A0','#0F2D24','#D4896A','#E8C36A','#A0B4A8','#8B5CF6','#F59E0B'];
+
+// ── State ──────────────────────────────────────────────────
+var S = {
+  city:'Seattle, WA', homePrice:875000, downPct:20, loanTerm:30, rate:6.6,
+  hasHOA:true, hoaAmt:420,
+  adults:2, kids:0, childcare:1980, groceries:880,
+  hlthPerAdult:500, cars:2, carPay:500, gasPerCar:180, insPerCar:185,
+  dining:600, entertain:250, trips:2, tripCost:3000, savePct:15,
+  apiKey:'', lastRefreshed:null
+};
+
+// ── Tax Engine ─────────────────────────────────────────────
+function federalTax(gross) {
+  var taxable = Math.max(0, gross - 14600);
+  var brackets = [[11600,0.10],[35550,0.12],[53375,0.22],[91425,0.24],[51775,0.32],[365625,0.35],[1e9,0.37]];
+  var tax = 0, rem = taxable;
+  for (var i = 0; i < brackets.length; i++) {
+    if (rem <= 0) break;
+    var chunk = Math.min(rem, brackets[i][0]);
+    tax += chunk * brackets[i][1];
+    rem -= chunk;
+  }
+  return tax;
+}
+function ficaTax(g) {
+  return Math.min(g, 168600) * 0.062 + g * 0.0145 + (g > 200000 ? (g - 200000) * 0.009 : 0);
+}
+function grossFromNet(net, sr) {
+  var lo = net, hi = net * 4;
+  for (var i = 0; i < 80; i++) {
+    var m = (lo + hi) / 2;
+    var n = m - federalTax(m) - ficaTax(m) - m * sr;
+    if (n < net) lo = m; else hi = m;
+  }
+  return (lo + hi) / 2;
+}
+function calcMortgage(p, rate, yrs) {
+  var r = rate / 100 / 12, n = yrs * 12;
+  if (!r) return p / n;
+  return p * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+}
+
+// ── Format helpers ─────────────────────────────────────────
+function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+function set(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; }
+function setHTML(id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; }
+
+// ── Main Calculation ───────────────────────────────────────
+function calc() {
+  var cd = CITIES[S.city];
+  var principal = S.homePrice * (1 - S.downPct / 100);
+  var mortgage   = calcMortgage(principal, S.rate, S.loanTerm);
+  var propTax    = S.homePrice * cd.propTax / 12;
+  var homeIns    = S.homePrice * 0.005 / 12;
+  var maint      = S.homePrice * 0.01  / 12;
+  var util       = cd.util;
+  var hoa        = S.hasHOA ? S.hoaAmt : 0;
+  var health     = S.hlthPerAdult * S.adults;
+  var childcareTot = S.kids * S.childcare;
+  var transport  = S.cars * (S.carPay + S.gasPerCar + S.insPerCar);
+  var travel     = S.trips * S.tripCost / 12;
+  var base = mortgage + propTax + homeIns + maint + util + hoa +
+             S.groceries + health + childcareTot + transport + S.dining + S.entertain + travel;
+  var savings = base * S.savePct / (100 - S.savePct);
+  var total   = base + savings;
+  var grossMin     = grossFromNet(total * 12, cd.stateTax);
+  var grossComfort = grossFromNet(total * 12 * 1.15, cd.stateTax);
+  var fedTaxMo   = federalTax(grossMin) / 12;
+  var stateTaxMo = grossMin * cd.stateTax / 12;
+  var ficaMo     = ficaTax(grossMin) / 12;
+  var effRate    = ((fedTaxMo + stateTaxMo + ficaMo) * 12 / grossMin * 100).toFixed(1);
+  var pie = [
+    {n:'Mortgage',          v:mortgage},
+    {n:'Taxes & Insurance', v:propTax + homeIns},
+    {n:'Maint. & Utilities',v:maint + util},
+    {n:'HOA',               v:hoa},
+    {n:'Groceries',         v:S.groceries},
+    {n:'Healthcare',        v:health},
+    {n:'Childcare',         v:childcareTot},
+    {n:'Transportation',    v:transport},
+    {n:'Dining & Fun',      v:S.dining + S.entertain},
+    {n:'Travel',            v:travel},
+    {n:'Savings',           v:savings}
+  ].filter(function(d) { return d.v > 50; });
+  return {mortgage:mortgage, propTax:propTax, homeIns:homeIns, maint:maint, util:util,
+          hoa:hoa, health:health, childcareTot:childcareTot, transport:transport,
+          travel:travel, savings:savings, total:total, grossMin:grossMin,
+          grossComfort:grossComfort, fedTaxMo:fedTaxMo, stateTaxMo:stateTaxMo,
+          ficaMo:ficaMo, effRate:effRate, pie:pie, cd:cd};
+}
+
+// ── SVG Donut Chart ────────────────────────────────────────
+function donutChart(data, size) {
+  size = size || 170;
+  var total = 0;
+  for (var i = 0; i < data.length; i++) total += data[i].v;
+  var r = size * 0.44, ir = size * 0.27, cx = size / 2, cy = size / 2;
+  var a = -Math.PI / 2, slices = '';
+  for (var i = 0; i < data.length; i++) {
+    var ang = data[i].v / total * 2 * Math.PI;
+    if (ang < 0.01) { a += ang; continue; }
+    var x1=cx+r*Math.cos(a), y1=cy+r*Math.sin(a);
+    var x2=cx+r*Math.cos(a+ang), y2=cy+r*Math.sin(a+ang);
+    var xi1=cx+ir*Math.cos(a), yi1=cy+ir*Math.sin(a);
+    var xi2=cx+ir*Math.cos(a+ang), yi2=cy+ir*Math.sin(a+ang);
+    var lg = ang > Math.PI ? 1 : 0;
+    var d = 'M'+xi1.toFixed(1)+' '+yi1.toFixed(1)+'L'+x1.toFixed(1)+' '+y1.toFixed(1)+
+            'A'+r.toFixed(1)+' '+r.toFixed(1)+' 0 '+lg+' 1 '+x2.toFixed(1)+' '+y2.toFixed(1)+
+            'L'+xi2.toFixed(1)+' '+yi2.toFixed(1)+'A'+ir.toFixed(1)+' '+ir.toFixed(1)+' 0 '+lg+' 0 '+xi1.toFixed(1)+' '+yi1.toFixed(1)+'Z';
+    slices += '<path d="'+d+'" fill="'+PIE_COLORS[i%PIE_COLORS.length]+'" stroke="white" stroke-width="1.5"/>';
+    a += ang;
+  }
+  return '<svg viewBox="0 0 '+size+' '+size+'" style="width:100%">'+slices+'</svg>';
+}
+
+// ── Update Results Panel ───────────────────────────────────
+function updateResults() {
+  var r = calc();
+  var cd = CITIES[S.city];
+  var lineItems = [
+    ['Mortgage', r.mortgage], ['Property Tax', r.propTax],
+    ["Homeowner's Insurance", r.homeIns], ['Maintenance', r.maint],
+    ['Utilities', r.util]
+  ];
+  if (r.hoa > 0)          lineItems.push(['HOA', r.hoa]);
+  lineItems.push(['Groceries & Supplies', S.groceries]);
+  lineItems.push(['Healthcare', r.health]);
+  if (r.childcareTot > 0) lineItems.push(['Childcare', r.childcareTot]);
+  if (r.transport > 0)    lineItems.push(['Transportation', r.transport]);
+  lineItems.push(['Dining Out', S.dining]);
+  lineItems.push(['Entertainment', S.entertain]);
+  if (r.travel > 0)       lineItems.push(['Travel', r.travel]);
+  lineItems.push(['Savings', r.savings]);
+
+  var lineHTML = '';
+  for (var i = 0; i < lineItems.length; i++) {
+    lineHTML += '<div class="li"><span>'+lineItems[i][0]+'</span><span>'+fmt(lineItems[i][1])+'<small>/mo</small></span></div>';
+  }
+  var stateRow = cd.stateTax > 0 ?
+    '<div class="tax-line"><span>State Income Tax</span><span>'+fmt(r.stateTaxMo)+'/mo</span></div>' : '';
+  var refreshRow = S.lastRefreshed ?
+    '<div class="last-updated">&#10003; Live data refreshed: '+S.lastRefreshed+'</div>' : '';
+  var legendHTML = '';
+  for (var i = 0; i < r.pie.length; i++) {
+    legendHTML += '<div class="legend-item"><div class="dot" style="background:'+PIE_COLORS[i%PIE_COLORS.length]+'"></div><span>'+r.pie[i].n+'</span><span>'+fmt(r.pie[i].v)+'</span></div>';
+  }
+  setHTML('results-panel',
+    '<div class="result-hero">'+
+      '<div class="result-eyebrow">Minimum Gross Salary</div>'+
+      '<div class="result-salary">'+fmt(r.grossMin)+'</div>'+
+      '<div class="result-city">per year &middot; '+S.city+'</div>'+
+      '<div class="result-comfort">'+
+        '<div class="comfort-label">Comfortable Salary &mdash; +15% buffer</div>'+
+        '<div class="comfort-salary">'+fmt(r.grossComfort)+'</div>'+
+      '</div>'+
+      '<div class="result-taxes">'+
+        '<div class="taxes-hdr">Monthly Tax Breakdown</div>'+
+        '<div class="tax-line"><span>Federal Income Tax</span><span>'+fmt(r.fedTaxMo)+'/mo</span></div>'+
+        stateRow+
+        '<div class="tax-line"><span>FICA (SS + Medicare)</span><span>'+fmt(r.ficaMo)+'/mo</span></div>'+
+        '<div class="eff-rate">Effective tax rate: ~'+r.effRate+'%</div>'+
+        '<div class="eff-note">Single filer &middot; 2024 federal brackets</div>'+
+        refreshRow+
+      '</div>'+
+    '</div>'+
+    '<div class="result-card">'+
+      '<div class="rc-label">Monthly Breakdown</div>'+
+      lineHTML+
+      '<div class="total-row"><span class="total-label">Total Monthly</span><span class="total-val">'+fmt(r.total)+'<small>/mo</small></span></div>'+
+    '</div>'+
+    '<div class="result-card">'+
+      '<div class="rc-label">Where Your Money Goes</div>'+
+      '<div class="chart-wrap">'+donutChart(r.pie)+'</div>'+
+      '<div class="legend">'+legendHTML+'</div>'+
+    '</div>'
+  );
+  // Also update the auto block
+  updateAutoBlock();
+}
+
+// ── Update Auto-Estimated Housing Block ────────────────────
+function updateAutoBlock() {
+  var cd = CITIES[S.city];
+  var principal = S.homePrice * (1 - S.downPct / 100);
+  set('auto-mortgage', fmt(calcMortgage(principal, S.rate, S.loanTerm)) + '/mo');
+  set('auto-propTax-label', 'Property Tax (' + (cd.propTax * 100).toFixed(2) + '%/yr)');
+  set('auto-propTax', fmt(S.homePrice * cd.propTax / 12) + '/mo');
+  set('auto-ins',     fmt(S.homePrice * 0.005 / 12) + '/mo');
+  set('auto-maint',   fmt(S.homePrice * 0.01  / 12) + '/mo');
+  set('auto-util-label', 'Utilities (' + S.city + ' avg)');
+  set('auto-util', fmt(cd.util) + '/mo');
+}
+
+// ── Update All Slider Labels ───────────────────────────────
+function updateLabels() {
+  var cd = CITIES[S.city];
+  var principal = S.homePrice * (1 - S.downPct / 100);
+  set('val-downPct', S.downPct + '% \u2014 ' + fmt(S.homePrice * S.downPct / 100));
+  set('sub-downPct', 'Loan principal: ' + fmt(principal));
+  set('val-rate', S.rate.toFixed(1) + '%');
+  set('val-hoaAmt', fmt(S.hoaAmt) + '/mo');
+  set('sub-hoaAmt', S.city + ' avg: ' + fmt(cd.hoa) + '/mo');
+  set('val-childcare', fmt(S.childcare) + '/child');
+  set('sub-childcare', S.city + ' avg: ' + fmt(cd.childcare) + '/child \u00b7 Total: ' + fmt(S.kids * S.childcare) + '/mo');
+  set('val-groceries', fmt(S.groceries) + '/mo');
+  var adultsStr = S.adults + ' adult' + (S.adults > 1 ? 's' : '');
+  var kidsStr = S.kids > 0 ? ' + ' + S.kids + ' child' + (S.kids > 1 ? 'ren' : '') : '';
+  set('sub-groceries', 'Auto-set for ' + adultsStr + kidsStr + '. Drag to adjust.');
+  set('val-hlthPerAdult', fmt(S.hlthPerAdult) + '/adult');
+  set('sub-hlthPerAdult', 'Total: ' + fmt(S.hlthPerAdult * S.adults) + '/mo for ' + adultsStr);
+  set('val-carPay', fmt(S.carPay) + '/mo');
+  set('val-gasPerCar', fmt(S.gasPerCar) + '/car');
+  set('sub-gasPerCar', 'Total gas: ' + fmt(S.gasPerCar * S.cars) + '/mo');
+  set('val-insPerCar', fmt(S.insPerCar) + '/car');
+  set('sub-insPerCar', S.city + ' avg: ' + fmt(cd.carIns) + '/car \u00b7 Total: ' + fmt(S.insPerCar * S.cars) + '/mo');
+  set('val-dining', fmt(S.dining) + '/mo');
+  set('val-entertain', fmt(S.entertain) + '/mo');
+  set('val-trips', S.trips + ' trip' + (S.trips !== 1 ? 's' : '') + ' / year');
+  set('val-tripCost', fmt(S.tripCost) + '/trip');
+  set('sub-tripCost', 'Annual travel budget: ' + fmt(S.trips * S.tripCost) + ' \u2192 ' + fmt(S.trips * S.tripCost / 12) + '/mo');
+  set('val-savePct', S.savePct + '%');
+}
+
+// ── Refresh: update input elements after city change ───────
+function syncInputs() {
+  var el;
+  function setVal(id, v) { el = document.getElementById(id); if (el) el.value = v; }
+  setVal('homePrice', S.homePrice);
+  setVal('hoaAmt', S.hoaAmt);
+  setVal('childcare', S.childcare);
+  setVal('insPerCar', S.insPerCar);
+  setVal('groceries', S.groceries);
+  setVal('rate', S.rate);
+}
+
+// ── Anthropic API Live Refresh ─────────────────────────────
+function showRefreshOverlay() {
+  var existing = document.getElementById('refresh-overlay');
+  if (existing) existing.remove();
+  var div = document.createElement('div');
+  div.className = 'overlay';
+  div.id = 'refresh-overlay';
+  div.innerHTML =
+    '<div class="overlay-box">'+
+    '<h2 class="overlay-title">Refresh Live Data</h2>'+
+    '<p class="overlay-sub">Enter your Anthropic API key to have Claude search the web for the latest costs for <strong>'+S.city+'</strong>.</p>'+
+    '<input class="overlay-input" id="api-key-input" type="password" placeholder="sk-ant-..." autocomplete="off">'+
+    '<div class="overlay-warn">&#9888; Your key goes directly to Anthropic\'s API. Fine for personal use &mdash; don\'t share this page publicly with your key saved.</div>'+
+    '<div class="overlay-btns">'+
+    '<button class="btn-cancel" onclick="document.getElementById(\'refresh-overlay\').remove()">Cancel</button>'+
+    '<button class="btn-primary" id="fetch-btn" onclick="doRefresh()">Fetch Live Data</button>'+
+    '</div></div>';
+  document.body.appendChild(div);
+  if (S.apiKey) document.getElementById('api-key-input').value = S.apiKey;
+}
+
+function doRefresh() {
+  var keyEl = document.getElementById('api-key-input');
+  var apiKey = keyEl ? keyEl.value.trim() : '';
+  if (!apiKey) { alert('Please enter your Anthropic API key.'); return; }
+  S.apiKey = apiKey;
+  var btn = document.getElementById('fetch-btn');
+  if (btn) btn.innerHTML = '<span class="spinner"></span>Fetching...';
+
+  var prompt = 'Search the web for the most current 2026 housing and living cost data for ' + S.city +
+    '. Return ONLY this JSON with no other text: ' +
+    '{"median":HOME_PRICE,"propTax":TAX_RATE_DECIMAL,"hoa":HOA_MONTHLY,"util":UTILITIES_MONTHLY,' +
+    '"groc":GROCERY_PER_PERSON_MONTHLY,"childcare":CHILDCARE_PER_CHILD_MONTHLY,' +
+    '"carIns":CAR_INSURANCE_MONTHLY,"mortgageRate":RATE_PERCENT}';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      tools: [{'type':'web_search_20250305','name':'web_search'}],
+      system: 'Return ONLY valid JSON. No markdown, no explanation.',
+      messages: [{role:'user', content: prompt}]
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.error) throw new Error(data.error.message || 'API error');
+    var text = '';
+    for (var i = 0; i < data.content.length; i++) {
+      if (data.content[i].type === 'text') text += data.content[i].text;
+    }
+    var match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('No JSON found in response');
+    var fresh = JSON.parse(match[0]);
+    var cd = CITIES[S.city];
+    if (fresh.median && fresh.median > 50000)           cd.median    = Math.round(fresh.median);
+    if (fresh.propTax && fresh.propTax > 0)              cd.propTax   = fresh.propTax;
+    if (fresh.hoa && fresh.hoa > 0)                      cd.hoa       = Math.round(fresh.hoa);
+    if (fresh.util && fresh.util > 50)                   cd.util      = Math.round(fresh.util);
+    if (fresh.groc && fresh.groc > 50)                   cd.groc      = Math.round(fresh.groc);
+    if (fresh.childcare && fresh.childcare > 200)        cd.childcare = Math.round(fresh.childcare);
+    if (fresh.carIns && fresh.carIns > 30)               cd.carIns    = Math.round(fresh.carIns);
+    if (fresh.mortgageRate && fresh.mortgageRate > 2 && fresh.mortgageRate < 15) {
+      S.rate = parseFloat(parseFloat(fresh.mortgageRate).toFixed(2));
+      var rEl = document.getElementById('rate');
+      if (rEl) rEl.value = S.rate;
+    }
+    S.homePrice  = cd.median;
+    S.hoaAmt     = cd.hoa;
+    S.childcare  = cd.childcare;
+    S.insPerCar  = cd.carIns;
+    S.groceries  = cd.groc * S.adults + S.kids * 200;
+    S.lastRefreshed = new Date().toLocaleString();
+    var ov = document.getElementById('refresh-overlay');
+    if (ov) ov.remove();
+    syncInputs();
+    updateLabels();
+    updateResults();
+    alert('Live data updated for ' + S.city + '!');
+  })
+  .catch(function(err) {
+    if (btn) btn.textContent = 'Fetch Live Data';
+    alert('Error: ' + err.message + '\n\nCheck your API key and try again.');
+  });
+}
+
+// ── Bind Events ────────────────────────────────────────────
+function bindEvents() {
+  // All range sliders
+  var sliders = ['downPct','rate','hoaAmt','childcare','groceries','hlthPerAdult',
+                 'carPay','gasPerCar','insPerCar','dining','entertain','trips','tripCost','savePct'];
+  sliders.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function() {
+      S[id] = parseFloat(this.value);
+      updateLabels();
+      updateResults();
+    });
+  });
+
+  // Home price number input
+  var hp = document.getElementById('homePrice');
+  if (hp) hp.addEventListener('change', function() {
+    S.homePrice = parseFloat(this.value) || 0;
+    updateLabels();
+    updateResults();
+  });
+
+  // City select
+  var cs = document.getElementById('city-select');
+  if (cs) cs.addEventListener('change', function() {
+    var city = this.value;
+    var cd = CITIES[city];
+    S.city = city;
+    S.homePrice = cd.median;
+    S.hoaAmt    = cd.hoa;
+    S.childcare = cd.childcare;
+    S.insPerCar = cd.carIns;
+    S.groceries = cd.groc * S.adults + S.kids * 200;
+    set('tax-note', cd.taxNote);
+    set('hp-label', 'Target Home Price \u00b7 ' + city + ' median: ' + fmt(cd.median));
+    syncInputs();
+    updateLabels();
+    updateResults();
+  });
+
+  // HOA toggle
+  var hoaTog = document.getElementById('hoa-toggle');
+  if (hoaTog) hoaTog.addEventListener('click', function() {
+    S.hasHOA = !S.hasHOA;
+    this.classList.toggle('on', S.hasHOA);
+    var sec = document.getElementById('hoa-section');
+    if (sec) sec.style.display = S.hasHOA ? 'block' : 'none';
+    updateResults();
+  });
+
+  // Refresh button
+  var rb = document.getElementById('refresh-btn');
+  if (rb) rb.addEventListener('click', showRefreshOverlay);
+
+  // Button groups via event delegation
+  document.addEventListener('click', function(e) {
+    var btn = e.target;
+    if (!btn.dataset.val) return;
+    var group = btn.closest('[data-group]');
+    if (!group) return;
+    var groupName = group.dataset.group;
+    var val = parseInt(btn.dataset.val, 10);
+
+    // Update active styles
+    var btns = group.querySelectorAll('.btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle('active', parseInt(btns[i].dataset.val, 10) === val);
+    }
+
+    if (groupName === 'loanTerm') {
+      S.loanTerm = val;
+    } else if (groupName === 'adults') {
+      S.adults = val;
+      S.groceries = CITIES[S.city].groc * val + S.kids * 200;
+      var gEl = document.getElementById('groceries');
+      if (gEl) gEl.value = S.groceries;
+    } else if (groupName === 'kids') {
+      S.kids = val;
+      S.groceries = CITIES[S.city].groc * S.adults + val * 200;
+      var gEl = document.getElementById('groceries');
+      if (gEl) gEl.value = S.groceries;
+      var ccRow = document.getElementById('childcare-row');
+      if (ccRow) ccRow.style.display = val > 0 ? 'block' : 'none';
+    } else if (groupName === 'cars') {
+      S.cars = val;
+      var det = document.getElementById('car-details');
+      if (det) det.style.display = val > 0 ? 'block' : 'none';
+    }
+    updateLabels();
+    updateResults();
+  });
+}
+
+// ── Init ───────────────────────────────────────────────────
+function init() {
+  try {
+    updateLabels();
+    updateResults();
+    bindEvents();
+  } catch (err) {
+    document.body.innerHTML =
+      '<div style="padding:40px;font-family:sans-serif;max-width:600px;margin:0 auto">' +
+      '<h2 style="color:#c00;margin-bottom:12px">Something went wrong</h2>' +
+      '<p style="color:#666;margin-bottom:12px">Error: ' + err.message + '</p>' +
+      '<p style="color:#666">Open browser DevTools (F12) and check the Console tab for details.</p>' +
+      '</div>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>
